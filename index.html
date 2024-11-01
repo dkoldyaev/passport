@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Проверка статуса паспорта</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/material-ui/5.0.0-alpha.37/umd/material-ui.production.min.js"
+      crossorigin
+    ></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      #root {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      const { useState, useEffect } = React;
+      const {
+        TextField,
+        Button,
+        Card,
+        CardContent,
+        Typography,
+        CircularProgress,
+      } = MaterialUI;
+
+      function PassportStatusChecker() {
+        const [passportNumber, setPassportNumber] = useState(
+          localStorage.getItem("passportNumber") || ""
+        );
+        const [statusData, setStatusData] = useState(null);
+        const [loading, setLoading] = useState(false);
+
+        useEffect(() => {
+          localStorage.setItem("passportNumber", passportNumber);
+        }, [passportNumber]);
+
+        const fetchPassportStatus = async () => {
+          setLoading(true);
+          try {
+            const response = await fetch(
+              `https://info.midpass.ru/api/request/${passportNumber}`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              setStatusData(data);
+            } else {
+              alert("Ошибка при запросе данных");
+            }
+          } catch (error) {
+            console.error("Ошибка:", error);
+            alert("Ошибка сети");
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        return React.createElement(
+          Card,
+          null,
+          React.createElement(
+            CardContent,
+            null,
+            React.createElement(
+              Typography,
+              { variant: "h5", component: "h2", gutterBottom: true },
+              "Проверка статуса паспорта"
+            ),
+            React.createElement(
+              Typography,
+              { variant: "body1", color: "textSecondary", gutterBottom: true },
+              "Консульства часто не обновляют статус готовности паспорта вовремя, и статус бывает неполным или непонятным. " +
+                "Этот сервис позволяет получить более подробные данные о готовности паспорта, напрямую из доступных данных. " +
+                "Просто введите номер паспорта, чтобы узнать внутренний статус и процент готовности."
+            ),
+            React.createElement(TextField, {
+              label: "Введите номер паспорта",
+              variant: "outlined",
+              fullWidth: true,
+              margin: "normal",
+              value: passportNumber,
+              onChange: (e) => setPassportNumber(e.target.value),
+            }),
+            React.createElement(
+              Button,
+              {
+                variant: "contained",
+                color: "primary",
+                fullWidth: true,
+                onClick: fetchPassportStatus,
+                disabled: loading || !passportNumber,
+              },
+              "Проверить"
+            ),
+            loading &&
+              React.createElement(CircularProgress, {
+                style: { marginTop: "20px" },
+              }),
+            statusData &&
+              React.createElement(
+                "div",
+                { style: { marginTop: "20px" } },
+                React.createElement(
+                  Typography,
+                  { variant: "h6" },
+                  "Результаты:"
+                ),
+                React.createElement(
+                  Typography,
+                  null,
+                  `Internal Status: ${statusData.internalStatus.name}`
+                ),
+                React.createElement(
+                  Typography,
+                  null,
+                  `Процент завершения: ${statusData.internalStatus.percent}%`
+                )
+              )
+          )
+        );
+      }
+
+      ReactDOM.render(
+        React.createElement(PassportStatusChecker),
+        document.getElementById("root")
+      );
+    </script>
+  </body>
+</html>
