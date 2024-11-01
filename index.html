@@ -16,6 +16,10 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/material-ui/5.0.0-alpha.37/umd/material-ui.production.min.js"
       crossorigin
     ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/react-image-zoom/1.1.3/index.umd.js"
+      crossorigin
+    ></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -25,51 +29,10 @@
         max-width: 500px;
         margin: 0 auto;
       }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        padding-top: 60px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.4);
-      }
-      .modal-content {
-        margin: auto;
-        padding: 20px;
-        background-color: #fff;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 600px;
-      }
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-      }
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
     </style>
   </head>
   <body>
     <div id="root"></div>
-    <div id="statusModal" class="modal">
-      <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <img
-          src="/passport/statuses.jpeg"
-          alt="Граф статусов"
-          style="width: 100%"
-        />
-      </div>
-    </div>
     <script>
       const { useState, useEffect } = React;
       const {
@@ -79,15 +42,11 @@
         CardContent,
         Typography,
         CircularProgress,
+        Dialog,
+        DialogTitle,
+        DialogContent,
+        IconButton,
       } = MaterialUI;
-
-      function openModal() {
-        document.getElementById("statusModal").style.display = "block";
-      }
-
-      function closeModal() {
-        document.getElementById("statusModal").style.display = "none";
-      }
 
       function PassportStatusChecker() {
         const [passportNumber, setPassportNumber] = useState(
@@ -95,6 +54,7 @@
         );
         const [statusData, setStatusData] = useState(null);
         const [loading, setLoading] = useState(false);
+        const [openModal, setOpenModal] = useState(false);
 
         useEffect(() => {
           localStorage.setItem("passportNumber", passportNumber);
@@ -120,6 +80,35 @@
           }
         };
 
+        const getStatusDescription = (percent) => {
+          switch (percent) {
+            case 0:
+              return "Заявление создано. Ожидает принятия в обработку.";
+            case 5:
+              return "Готово. Заявление ожидает отправления диппочтой в Россию.";
+            case 10:
+              return "Отправлено. Заявление отправлено диппочтой в Россию.";
+            case 20:
+              return "Принято в обработку. Диппочта дошла до МИДа.";
+            case 30:
+              return "Отправлено на согласование. Ожидание дополнительных проверок.";
+            case 60:
+              return "Согласовано письмом. Проверка завершена, доступ к гостайне подтвержден.";
+            case 70:
+              return "Персонализация разрешена. Печать паспорта начата.";
+            case 80:
+              return "Паспорт поступил в МИД. Ожидает отправления в консульство.";
+            case 90:
+              return "Паспорт поступил в консульство.";
+            case 100:
+              return "Паспорт готов к выдаче.";
+            case -1:
+              return "Паспорт выдан или отменен.";
+            default:
+              return "Статус неизвестен.";
+          }
+        };
+
         return React.createElement(
           Card,
           null,
@@ -134,13 +123,11 @@
             React.createElement(
               Typography,
               { variant: "body1", color: "textSecondary", gutterBottom: true },
-              "Консульства за рубежом часто задерживают обновление статуса готовности загранпаспорта. Статус может быть неполным или недостаточно информативным. " +
-                "Этот сервис предоставляет более подробные данные о готовности паспорта напрямую из доступных источников. " +
-                "Введите номер заявления, чтобы узнать актуальный статус и процент завершения процесса. " +
+              "Введите номер заявления, чтобы узнать актуальный статус и процент завершения процесса. " +
                 "Для просмотра графической схемы статусов нажмите ",
               React.createElement(
                 "a",
-                { href: "#", onClick: openModal },
+                { href: "#", onClick: () => setOpenModal(true) },
                 "здесь"
               ),
               "."
@@ -186,8 +173,36 @@
                   Typography,
                   null,
                   `Процент завершения: ${statusData.internalStatus.percent}%`
+                ),
+                React.createElement(
+                  Typography,
+                  null,
+                  getStatusDescription(statusData.internalStatus.percent)
                 )
               )
+          ),
+          React.createElement(
+            Dialog,
+            {
+              open: openModal,
+              onClose: () => setOpenModal(false),
+            },
+            React.createElement(DialogTitle, null, "Граф статусов"),
+            React.createElement(
+              DialogContent,
+              null,
+              React.createElement(
+                "div",
+                null,
+                React.createElement("img", {
+                  src: "/passport/statuses.jpeg",
+                  alt: "Граф статусов",
+                  style: { width: "100%", cursor: "zoom-in" },
+                  onClick: () =>
+                    window.open("/passport/statuses.jpeg", "_blank"),
+                })
+              )
+            )
           )
         );
       }
