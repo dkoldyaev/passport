@@ -25,10 +25,51 @@
         max-width: 500px;
         margin: 0 auto;
       }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        padding-top: 60px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+      .modal-content {
+        margin: auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 600px;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="statusModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img
+          src="/statuses.jpeg"
+          alt="Граф статусов"
+          style="width: 100%"
+        />
+      </div>
+    </div>
     <script>
       const { useState, useEffect } = React;
       const {
@@ -39,6 +80,14 @@
         Typography,
         CircularProgress,
       } = MaterialUI;
+
+      function openModal() {
+        document.getElementById("statusModal").style.display = "block";
+      }
+
+      function closeModal() {
+        document.getElementById("statusModal").style.display = "none";
+      }
 
       function PassportStatusChecker() {
         const [passportNumber, setPassportNumber] = useState(
@@ -85,9 +134,16 @@
             React.createElement(
               Typography,
               { variant: "body1", color: "textSecondary", gutterBottom: true },
-              "Консульства часто не обновляют статус готовности паспорта вовремя, и статус бывает неполным или непонятным. " +
-                "Этот сервис позволяет получить более подробные данные о готовности паспорта, напрямую из доступных данных. " +
-                "Просто введите номер паспорта, чтобы узнать внутренний статус и процент готовности."
+              "Консульства за рубежом часто задерживают обновление статуса готовности загранпаспорта. Статус может быть неполным или недостаточно информативным. " +
+                "Этот сервис предоставляет более подробные данные о готовности паспорта напрямую из доступных источников. " +
+                "Введите номер паспорта, чтобы узнать актуальный статус и процент завершения процесса. " +
+                "Для просмотра графической схемы статусов нажмите ",
+              React.createElement(
+                "a",
+                { href: "#", onClick: openModal },
+                "здесь"
+              ),
+              "."
             ),
             React.createElement(TextField, {
               label: "Введите номер паспорта",
@@ -124,7 +180,7 @@
                 React.createElement(
                   Typography,
                   null,
-                  `Internal Status: ${statusData.internalStatus.name}`
+                  `Внутренний статус: ${statusData.internalStatus.name}`
                 ),
                 React.createElement(
                   Typography,
