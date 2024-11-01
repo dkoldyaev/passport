@@ -16,10 +16,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/material-ui/5.0.0-alpha.37/umd/material-ui.production.min.js"
       crossorigin
     ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/react-image-zoom/1.1.3/index.umd.js"
-      crossorigin
-    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.15.0/flowchart.min.js"></script>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -28,6 +25,11 @@
       #root {
         max-width: 500px;
         margin: 0 auto;
+      }
+      #diagramContainer {
+        width: 100%;
+        height: 400px;
+        overflow: auto;
       }
     </style>
   </head>
@@ -45,8 +47,37 @@
         Dialog,
         DialogTitle,
         DialogContent,
-        IconButton,
       } = MaterialUI;
+
+      // Граф статусов
+      const graph = {
+        A: { adjacent: ["C"], status: "Заявление создано" },
+        B: { adjacent: [], status: "Удалено" },
+        C: { adjacent: ["G", "D", "E"], status: "Готово" },
+        D: { adjacent: [], status: "Отклонено" },
+        E: { adjacent: ["F"], status: "Отправлено" },
+        F: { adjacent: ["H"], status: "Принято в обработку" },
+        G: { adjacent: ["H", "I", "K"], status: "Приостановлено" },
+        H: { adjacent: ["J", "L", "M"], status: "На согласовании" },
+        I: { adjacent: [], status: "Возврат без исполнения" },
+        J: { adjacent: [], status: "Дополнительная проверка" },
+        K: { adjacent: [], status: "Отмена изготовления паспорта" },
+        L: { adjacent: ["N"], status: "Согласовано письмом" },
+        M: { adjacent: ["P"], status: "Отправлено в МРЛОД" },
+        N: { adjacent: [], status: "Отказ в согласовании" },
+        O: { adjacent: ["P"], status: "Согласовано" },
+        P: { adjacent: ["R"], status: "Персонализация разрешена" },
+        R: { adjacent: ["Q"], status: "На персонализации" },
+        Q: { adjacent: ["T"], status: "Паспорт напечатан" },
+        T: { adjacent: ["S"], status: "Паспорт поступил" },
+        S: { adjacent: ["U"], status: "Паспорт отправлен в РКЗУ" },
+        U: { adjacent: ["W"], status: "Паспорт поступил" },
+        W: { adjacent: [], status: "Паспорт верифицирован" },
+        V: { adjacent: [], status: "Паспорт аннулирован" },
+        Y: { adjacent: [], status: "Почтовое отправление" },
+        Z: { adjacent: [], status: "Паспорт выдан" },
+        Z2: { adjacent: [], status: "Паспорт утилизирован" },
+      };
 
       function PassportStatusChecker() {
         const [passportNumber, setPassportNumber] = useState(
@@ -80,34 +111,46 @@
           }
         };
 
-        const getStatusDescription = (percent) => {
-          switch (percent) {
-            case 0:
-              return "Заявление создано. Ожидает принятия в обработку.";
-            case 5:
-              return "Готово. Заявление ожидает отправления диппочтой в Россию.";
-            case 10:
-              return "Отправлено. Заявление отправлено диппочтой в Россию.";
-            case 20:
-              return "Принято в обработку. Диппочта дошла до МИДа.";
-            case 30:
-              return "Отправлено на согласование. Ожидание дополнительных проверок.";
-            case 60:
-              return "Согласовано письмом. Проверка завершена, доступ к гостайне подтвержден.";
-            case 70:
-              return "Персонализация разрешена. Печать паспорта начата.";
-            case 80:
-              return "Паспорт поступил в МИД. Ожидает отправления в консульство.";
-            case 90:
-              return "Паспорт поступил в консульство.";
-            case 100:
-              return "Паспорт готов к выдаче.";
-            case -1:
-              return "Паспорт выдан или отменен.";
-            default:
-              return "Статус неизвестен.";
+        const findNodeByName = (name) => {
+          for (let node in graph) {
+            if (graph[node].status === name) return node;
           }
+          return null;
         };
+
+        const renderDiagram = () => {
+          const currentNode = findNodeByName(statusData.internalStatus.name);
+          if (!currentNode) return;
+
+          let diagramCode = `${currentNode}=>operation: ${graph[currentNode].status}\n`;
+
+          const traverseGraph = (node) => {
+            if (!graph[node] || !graph[node].adjacent) return;
+            graph[node].adjacent.forEach((adj) => {
+              diagramCode += `${node}->${adj}\n`;
+              if (
+                !diagramCode.includes(
+                  `${adj}=>operation: ${graph[adj].status}\n`
+                )
+              ) {
+                diagramCode += `${adj}=>operation: ${graph[adj].status}\n`;
+              }
+              traverseGraph(adj);
+            });
+          };
+          traverseGraph(currentNode);
+
+          const diagramContainer = document.getElementById("diagramContainer");
+          diagramContainer.innerHTML = "";
+          const diagram = flowchart.parse(diagramCode);
+          diagram.drawSVG("diagramContainer");
+        };
+
+        useEffect(() => {
+          if (openModal && statusData) {
+            renderDiagram();
+          }
+        }, [openModal, statusData]);
 
         return React.createElement(
           Card,
@@ -173,11 +216,6 @@
                   Typography,
                   null,
                   `Процент завершения: ${statusData.internalStatus.percent}%`
-                ),
-                React.createElement(
-                  Typography,
-                  null,
-                  getStatusDescription(statusData.internalStatus.percent)
                 )
               )
           ),
@@ -186,22 +224,14 @@
             {
               open: openModal,
               onClose: () => setOpenModal(false),
+              maxWidth: "md",
+              fullWidth: true,
             },
             React.createElement(DialogTitle, null, "Граф статусов"),
             React.createElement(
               DialogContent,
               null,
-              React.createElement(
-                "div",
-                null,
-                React.createElement("img", {
-                  src: "/passport/statuses.jpeg",
-                  alt: "Граф статусов",
-                  style: { width: "100%", cursor: "zoom-in" },
-                  onClick: () =>
-                    window.open("/passport/statuses.jpeg", "_blank"),
-                })
-              )
+              React.createElement("div", { id: "diagramContainer" })
             )
           )
         );
