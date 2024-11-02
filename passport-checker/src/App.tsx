@@ -3,9 +3,13 @@
 // import viteLogo from '/vite.svg'
 import './App.css'
 import { CheckFormComponent } from './check-form/check-form.component'
+import { DonateMe } from './donate-me/donate-me.component'
 
 function App() {
-  return <CheckFormComponent />
+  return <>
+    <CheckFormComponent />
+    <DonateMe />
+  </>
 
   // const [count, setCount] = useState(0)
 
