@@ -12,7 +12,7 @@ import ziraat from '../assets/TC_Ziraat_Bankası_logo.svg';
 
 export function DonateMe() {
   return <Box>
-    <Card sx={{ maxWidth: '500px', margin: '16px auto' }}>
+    <Card>
       <CardHeader
         title="Сказать спасибо"
         subheader="Если вам нравится мой сервис, вы можете меня отблагодарить любым из следующих способов:"
@@ -50,23 +50,12 @@ export function DonateMe() {
       <Accordion>
         <AccordionSummary>
           <img src={ziraat} style={{ width: 24, height: 24, marginInlineEnd: '16px' }} />
-          <Typography>Турция (Ziraat)</Typography>
+          <Typography>Ziraat (Турция)</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>TR88 0001 0090 1021 2398 7050 01</Typography>
         </AccordionDetails>
       </Accordion>
-
-
-      {/* <CardContent>
-      <Typography>
-        Если вы хотите меня отблагодарить, можете сделать это с помощью следующих способов:<br/>
-        <a href="https://buymeacoffee.com/dkoldyaevf">buymeacoffee</a><br/>
-        <a href="https://www.tbank.ru/cf/75mfKA8AKDQ">тинькофф</a><br/>
-        TBC:    <pre style={{display: 'inline-block', margin:0}}>GE95 TB71 4894 5168 2000 01</pre><br/>
-        Ziraat: <pre style={{display: 'inline-block', margin:0}}></pre>
-      </Typography>
-      </CardContent> */}
     </Card>
   </Box>
 }
