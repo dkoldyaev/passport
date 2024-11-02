@@ -1,4 +1,4 @@
-import { TPassportStatusResponse } from "./types";
+import { TPassportStatusResponse } from "../types";
 
 const API_ENDPOINT = 'https://info.midpass.ru/api/request';
 
