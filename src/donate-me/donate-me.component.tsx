@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Accordion from "@mui/material/Accordion";
-import { CardHeader } from "@mui/material";
+import CardHeader from "@mui/material/CardHeader";
 import buymeacoffee from '../assets/bmc-logo.svg';
 import tinkoff from '../assets/tinkoff-logo.png';
 import tbc from '../assets/tbc_filled.svg';

@@ -4,7 +4,10 @@ import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Typography from "@mui/material/Typography";
-import { Tooltip, Card, CardHeader, CardContent } from "@mui/material";
+import Tooltip from "@mui/material/Tooltip";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
 import { descriptions } from "../consts";
 
 export type THistoryItem = { status: TInternalStatuses[1], percent: TInternalStatuses[0], date: string }
