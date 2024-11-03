@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { TInternalStatuses, TPassportStatusResponse } from "../types";
+import { memo, useEffect, useState } from "react";
+import { TPassportInternalStatus } from "../types";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -8,57 +8,58 @@ import Tooltip from "@mui/material/Tooltip";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import CardContent from "@mui/material/CardContent";
-import { descriptions } from "../consts";
+import { useStatus } from "../services/status.service";
 
-export type THistoryItem = { status: TInternalStatuses[1], percent: TInternalStatuses[0], date: string }
+export type THistoryItem = TPassportInternalStatus & { date: string }
 export type THistory = Array<THistoryItem>;
 
-export function HistoryStep({
-  status,
-  percent,
+export const HistoryStep = memo(({
   date,
-  isActive
+  isActive,
+  ...internalStatus
 }: THistoryItem & {
   isActive: boolean
-}) {
-  const description = descriptions.find(
-    item =>
-      percent === item[0]
-      && item[1].includes(status)
-  )?.[2];
+}) => {
+  const { getDescription } = useStatus();
+  const description = getDescription(internalStatus);
+  const optional = new Date(date).toLocaleDateString('ru-RU');
 
   return <Step>
-    <StepLabel optional={new Date(date).toLocaleDateString('ru-RU')}>
+    <StepLabel optional={optional}>
       <Tooltip title={description}>
         <Typography variant="h6" color={isActive ? 'textPrimary' : 'textSecondary'} fontWeight={isActive ? 'bold' : 'normal'}>
-          {percent}% {status}
+          {internalStatus.percent}% {internalStatus.name}
         </Typography>
       </Tooltip>
     </StepLabel>
   </Step>
-}
+})
 
-export function StatusHistory({
-  status,
-  percent,
-  requestId
-}: {
-  status: TInternalStatuses[1],
-  percent: TInternalStatuses[0],
-  requestId: TPassportStatusResponse['uid']
-}) {
+export const StatusHistory = memo(() => {
   const [history, setHistory] = useState<THistory>([]);
+  const { passportStatus, valid, loading } = useStatus();
   useEffect(() => {
-    if (!status || typeof percent === 'undefined') return;
-    const history = localStorage.getItem(`history_${requestId}`)
-      ? JSON.parse(localStorage.getItem(`history_${requestId}`)!)
+    if (!passportStatus) return;
+
+    const {
+      internalStatus: { percent, name },
+      uid
+    } = passportStatus;
+
+    if (!name || typeof percent === 'undefined') return;
+    const history = localStorage.getItem(`history_${uid}`)
+      ? JSON.parse(localStorage.getItem(`history_${uid}`)!)
       : [];
-    if (history.length === 0 || (history[history.length - 1].status !== status && history[history.length - 1].percent !== percent)) {
-      history.push({ status, percent, date: new Date().toISOString() });
-      localStorage.setItem(`history_${requestId}`, JSON.stringify(history));
+    if (history.length === 0 || (history[history.length - 1].name !== name && history[history.length - 1].percent !== percent)) {
+      history.push({ name, percent, date: new Date().toISOString() });
+      localStorage.setItem(`history_${uid}`, JSON.stringify(history));
     }
     setHistory(history);
-  }, [status, percent, requestId]);
+  }, [passportStatus]);
+
+  if (loading || !valid) return null;
+
+  console.log({ loading, valid })
 
   return (
     <Card sx={{ maxWidth: '500px', margin: '16px auto' }}>
@@ -73,7 +74,7 @@ export function StatusHistory({
         >
           {history.map((step, index) => (
             <HistoryStep
-              key={`${step.percent}-${step.status}`}
+              key={`${step.percent}-${step.name}`}
               {...step}
               isActive={index === history.length - 1}
             />
@@ -81,4 +82,4 @@ export function StatusHistory({
         </Stepper>
       </CardContent></Card>
   );
-}
+})
