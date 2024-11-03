@@ -73,6 +73,12 @@ export function CheckFormComponent() {
       </CardContent>
     </Card>
 
-    {passportStatus && <StatusHistory percent={passportStatus.internalStatus.percent} status={passportStatus.internalStatus.name} />}
+    {passportStatus && (
+      <StatusHistory
+        percent={passportStatus.internalStatus.percent}
+        requestId={passportStatus.uid}
+        status={passportStatus.internalStatus.name}
+      />
+    )}
   </>
 }

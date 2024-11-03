@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TInternalStatuses } from "../types";
+import { TInternalStatuses, TPassportStatusResponse } from "../types";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
@@ -40,20 +40,25 @@ export function HistoryStep({
 
 export function StatusHistory({
   status,
-  percent
-}: { status: TInternalStatuses[1], percent: TInternalStatuses[0] }) {
+  percent,
+  requestId
+}: {
+  status: TInternalStatuses[1],
+  percent: TInternalStatuses[0],
+  requestId: TPassportStatusResponse['uid']
+}) {
   const [history, setHistory] = useState<THistory>([]);
   useEffect(() => {
     if (!status || typeof percent === 'undefined') return;
-    const history = localStorage.getItem('history')
-      ? JSON.parse(localStorage.getItem('history')!)
+    const history = localStorage.getItem(`history_${requestId}`)
+      ? JSON.parse(localStorage.getItem(`history_${requestId}`)!)
       : [];
     if (history.length === 0 || (history[history.length - 1].status !== status && history[history.length - 1].percent !== percent)) {
       history.push({ status, percent, date: new Date().toISOString() });
-      localStorage.setItem('history', JSON.stringify(history));
+      localStorage.setItem(`history_${requestId}`, JSON.stringify(history));
     }
     setHistory(history);
-  }, [status, percent]);
+  }, [status, percent, requestId]);
 
   return (
     <Card sx={{ maxWidth: '500px', margin: '16px auto' }}>
