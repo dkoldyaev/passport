@@ -1,12 +1,12 @@
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { ChangeEvent, useCallback } from "react";
+import { ChangeEvent, memo, useCallback } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import { useStatus } from "../services/status.service";
 
-export function CheckFormComponent() {
+export const CheckFormComponent = memo(() => {
   const {
     setPassportNumber,
     valid,
@@ -50,4 +50,4 @@ export function CheckFormComponent() {
       )}
     </CardContent>
   </Card>
-}
+})

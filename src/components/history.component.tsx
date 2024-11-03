@@ -22,7 +22,7 @@ export const HistoryStep = memo(({
 }) => {
   const { getDescription } = useStatus();
   const description = getDescription(internalStatus);
-  const optional = new Date(date).toLocaleDateString('ru-RU');
+  const optional = <Typography color="textSecondary">{new Date(date).toLocaleDateString('ru-RU')}</Typography>
 
   return <Step>
     <StepLabel optional={optional}>
@@ -58,8 +58,6 @@ export const StatusHistory = memo(() => {
   }, [passportStatus]);
 
   if (loading || !valid) return null;
-
-  console.log({ loading, valid })
 
   return (
     <Card sx={{ maxWidth: '500px', margin: '16px auto' }}>

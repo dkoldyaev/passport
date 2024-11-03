@@ -9,8 +9,9 @@ import buymeacoffee from '../assets/bmc-logo.svg';
 import tinkoff from '../assets/tinkoff-logo.png';
 import tbc from '../assets/tbc_filled.svg';
 import ziraat from '../assets/TC_Ziraat_Bankası_logo.svg';
+import { memo } from "react";
 
-export function DonateMe() {
+export const DonateMe = memo(() => {
   return <Box>
     <Card>
       <CardHeader
@@ -58,4 +59,4 @@ export function DonateMe() {
       </Accordion>
     </Card>
   </Box>
-}
+})
