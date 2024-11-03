@@ -26,6 +26,7 @@ export function CheckFormComponent() {
       if (!loading) {
         setLoading(true);
         setDescription(null);
+        setPassportStatus(null);
         getPassportStatus(passportNumber)
           .then(status => {
             setPassportStatus(status);
