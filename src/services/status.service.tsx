@@ -35,7 +35,10 @@ export type TStatusContextData = {
   passportNumber: string,
   setPassportNumber: (passportNumber: string) => void,
   description?: string,
-  getDescription: (status: TPassportInternalStatus) => string | undefined
+  getDescription: (status: TPassportInternalStatus) => string | undefined,
+  historyPassportNumbers: string[],
+  removeHistoryPassportNumber: (number: string) => void,
+  addHistoryPassportNumber: (number: string) => void,
 }
 
 const _StatusContext = createContext<TStatusContextData | null>(null);
@@ -52,6 +55,16 @@ export const StatusContext = memo(({ children }: PropsWithChildren) => {
   const [valid, setValid] = useState<boolean>(false);
   const [description, setDescription] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
+  const [historyPassportNumbers, setHistoryPassportNumbers] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      setHistoryPassportNumbers(JSON.parse(localStorage.getItem('passportsHistory')!));
+    } catch {
+      // do nothing
+    }
+  }, []);
+
   useEffect(() => {
     const valid = /2000\d{5}\d{4}\d{2}\d{2}\d{8}/.test(passportNumber);
     setValid(valid);
@@ -70,6 +83,7 @@ export const StatusContext = memo(({ children }: PropsWithChildren) => {
                 percent === status.internalStatus.percent
                 && statusCodes.includes(status.internalStatus.name)
             )?.[2]);
+            addHistoryPassportNumber(passportNumber);
           })
           .catch(() => {
             alert('Ошибка при запроса данных. Проверьте правильность номера заявления или попробуйте позже.');
@@ -83,6 +97,33 @@ export const StatusContext = memo(({ children }: PropsWithChildren) => {
   const startLoading = useCallback(() => setLoading(true), []);
   const stopLoading = useCallback(() => setLoading(false), []);
 
+  const removeHistoryPassportNumber = useCallback((value: string) => {
+    setHistoryPassportNumbers(prevNumbers => {
+      const currentValueIndex = prevNumbers.indexOf(value);
+      if (currentValueIndex !== -1) {
+        prevNumbers.splice(currentValueIndex, 1);
+      }
+      return [...prevNumbers];
+    });
+  }, []);
+
+  const addHistoryPassportNumber = useCallback((value: string) => {
+    setHistoryPassportNumbers(prevNumbers => {
+      const currentValueIndex = prevNumbers.indexOf(value);
+      if (currentValueIndex !== -1) {
+        prevNumbers.splice(currentValueIndex, 1);
+      }
+      prevNumbers.splice(0, 0, value);
+      return [...prevNumbers];
+    });
+  }, []);
+
+  useEffect(() => {
+    if (historyPassportNumbers && Array.isArray(historyPassportNumbers) && historyPassportNumbers.length > 0) {
+      localStorage.setItem('passportsHistory', JSON.stringify(historyPassportNumbers));
+    }
+  }, [historyPassportNumbers]);
+
   return <_StatusContext.Provider value={{
     passportStatus,
     loading,
@@ -93,7 +134,10 @@ export const StatusContext = memo(({ children }: PropsWithChildren) => {
     passportNumber,
     setPassportNumber,
     description,
-    getDescription
+    getDescription,
+    historyPassportNumbers,
+    removeHistoryPassportNumber,
+    addHistoryPassportNumber,
   }}>
     {children}
   </_StatusContext.Provider>
