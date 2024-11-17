@@ -99,6 +99,9 @@ export const StatusContext = memo(({ children }: PropsWithChildren) => {
 
   const removeHistoryPassportNumber = useCallback((value: string) => {
     setHistoryPassportNumbers(prevNumbers => {
+      if (!prevNumbers) {
+        return [value];
+      }
       const currentValueIndex = prevNumbers.indexOf(value);
       if (currentValueIndex !== -1) {
         prevNumbers.splice(currentValueIndex, 1);
@@ -109,6 +112,9 @@ export const StatusContext = memo(({ children }: PropsWithChildren) => {
 
   const addHistoryPassportNumber = useCallback((value: string) => {
     setHistoryPassportNumbers(prevNumbers => {
+      if (!prevNumbers) {
+        return [value];
+      }
       const currentValueIndex = prevNumbers.indexOf(value);
       if (currentValueIndex !== -1) {
         prevNumbers.splice(currentValueIndex, 1);
