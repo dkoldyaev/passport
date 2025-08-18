@@ -41,7 +41,7 @@ export const CheckFormComponent = memo(() => {
       <Autocomplete
         freeSolo
         disableClearable
-        options={historyPassportNumbers}
+        options={historyPassportNumbers || []}
         value={passportNumber}
         onSelect={handleSelect}
         onChange={handleChange}
